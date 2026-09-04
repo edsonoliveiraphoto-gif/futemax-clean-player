@@ -1,0 +1,70 @@
+{
+  "name": "FuteMAX Clean Player",
+  "short_name": "FuteMAX Clean",
+  "description": "Assista futebol ao vivo sem propagandas — cole qualquer link de jogo e aproveite o player limpo.",
+  "start_url": "./futemax-clean-player.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0a0e14",
+  "theme_color": "#10b981",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "categories": ["sports", "entertainment", "video"],
+  "icons": [
+    {
+      "src": "./icons/icon-16.png",
+      "sizes": "16x16",
+      "type": "image/png"
+    },
+    {
+      "src": "./icons/icon-32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "./icons/icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "./icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Carregar URL específica",
+      "short_name": "Carregar URL",
+      "description": "Abrir com o campo de URL pronto para colar um link de jogo",
+      "url": "./futemax-clean-player.html?action=load"
+    },
+    {
+      "name": "Jogos de hoje",
+      "short_name": "Hoje",
+      "description": "Ver lista de jogos do dia",
+      "url": "./futemax-clean-player.html?action=today"
+    }
+  ]
+}

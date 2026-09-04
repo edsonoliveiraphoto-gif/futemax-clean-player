@@ -1,0 +1,2287 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#10b981">
+<meta name="description" content="Assista futebol ao vivo sem propagandas — cole qualquer link de jogo e aproveite o player limpo.">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" type="image/png" sizes="32x32" href="./icons/icon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="./icons/icon-16.png">
+<link rel="apple-touch-icon" href="./icons/icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FuteMAX Clean">
+<meta name="mobile-web-app-capable" content="yes">
+<title>FuteMAX Clean Player — Assista sem propagandas</title>
+<style>
+  :root {
+    --bg: #0a0e14;
+    --bg-elev: #121821;
+    --bg-elev-2: #1a2230;
+    --border: #1f2937;
+    --text: #e5e7eb;
+    --text-muted: #9ca3af;
+    --accent: #10b981;
+    --accent-hover: #34d399;
+    --warning: #f59e0b;
+    --warning-bg: rgba(245, 158, 11, 0.08);
+    --error: #ef4444;
+    --error-bg: rgba(239, 68, 68, 0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    min-height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  body { display: flex; flex-direction: column; min-height: 100vh; }
+
+  /* Header */
+  header {
+    background: linear-gradient(180deg, #0d1219 0%, #0a0e14 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 20px;
+  }
+  .header-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .brand {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 700; font-size: 16px;
+  }
+  .brand .logo {
+    width: 32px; height: 32px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: #06281c; font-weight: 900;
+  }
+  .brand .subtitle {
+    font-size: 12px; color: var(--text-muted); font-weight: 400;
+  }
+
+  /* Main */
+  main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    max-width: 1400px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 14px 20px;
+    gap: 12px;
+  }
+
+  /* URL input card */
+  .url-card {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+  }
+  .url-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .url-input {
+    flex: 1;
+    min-width: 280px;
+    background: var(--bg-elev-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: monospace;
+  }
+  .url-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: var(--bg-elev);
+  }
+  .url-input::placeholder { color: #6b7280; }
+  .btn-primary {
+    background: var(--accent);
+    border: 1px solid var(--accent);
+    color: #06281c;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-secondary {
+    background: var(--bg-elev-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn-secondary:hover { background: #243044; border-color: #2d3a4f; }
+
+  .url-hint {
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .url-hint code {
+    background: var(--bg-elev-2);
+    padding: 1px 6px;
+    border-radius: 4px;
+    color: var(--accent-hover);
+    font-size: 11px;
+  }
+
+  /* Status / error area */
+  .status {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    display: none;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .status.show { display: flex; }
+  .status.info { background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); color: #6ee7b7; }
+  .status.warn { background: var(--warning-bg); border: 1px solid rgba(245, 158, 11, 0.3); color: #fcd34d; }
+  .status.err  { background: var(--error-bg);  border: 1px solid rgba(239, 68, 68, 0.3);  color: #fca5a5; }
+  .status svg { width: 16px; height: 16px; flex-shrink: 0; margin-top: 2px; fill: currentColor; }
+  .status a { color: inherit; text-decoration: underline; }
+
+  /* Manual HTML paste (fallback) */
+  .manual-card {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    display: none;
+  }
+  .manual-card.show { display: block; }
+  .manual-card h4 {
+    font-size: 13px;
+    color: var(--text);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .manual-card ol {
+    margin: 6px 0 10px 18px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .manual-card ol li { margin-bottom: 2px; }
+  .manual-card textarea {
+    width: 100%;
+    min-height: 100px;
+    background: var(--bg-elev-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-family: monospace;
+    resize: vertical;
+  }
+  .manual-card textarea:focus { outline: none; border-color: var(--accent); }
+  .manual-actions { margin-top: 8px; display: flex; gap: 8px; }
+
+  /* Match info */
+  .match-banner {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .match-banner.show { display: flex; }
+  .match-title { font-weight: 700; font-size: 16px; }
+  .match-meta-row {
+    display: flex; gap: 12px; flex-wrap: wrap;
+    font-size: 12px; color: var(--text-muted);
+  }
+  .match-meta-row .comp { color: var(--accent); font-weight: 600; }
+
+  /* Player area */
+  .player-section { display: none; }
+  .player-section.show { display: flex; flex-direction: column; gap: 12px; }
+
+  .toolbar {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px; flex-wrap: wrap;
+  }
+  .toolbar-left { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-muted); }
+  .toolbar-right { display: flex; gap: 6px; }
+  .tool-btn {
+    background: var(--bg-elev-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    display: inline-flex; align-items: center; gap: 5px;
+    transition: all 0.15s ease;
+  }
+  .tool-btn:hover { background: #243044; border-color: #2d3a4f; }
+  .tool-btn svg { width: 14px; height: 14px; fill: currentColor; }
+
+  .player-wrap {
+    position: relative;
+    width: 100%;
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    aspect-ratio: 16 / 9;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  }
+  .player-wrap iframe { width: 100%; height: 100%; border: 0; display: block; }
+  .player-placeholder {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 14px; text-align: center; padding: 20px;
+    background: radial-gradient(circle at 50% 50%, #121821 0%, #0a0e14 80%);
+  }
+  .player-placeholder.hidden { display: none; }
+  .player-placeholder .icon {
+    width: 60px; height: 60px; border-radius: 50%;
+    background: var(--bg-elev-2);
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid var(--border);
+  }
+  .player-placeholder .icon svg { width: 28px; height: 28px; fill: var(--accent); }
+  .player-placeholder h2 { font-size: 18px; font-weight: 600; color: var(--text); }
+  .player-placeholder p { font-size: 13px; color: var(--text-muted); max-width: 460px; }
+
+  .options-bar {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .options-title {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 10px; gap: 10px; flex-wrap: wrap;
+  }
+  .options-title h3 {
+    font-size: 13px; font-weight: 600; color: var(--text);
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .options-title .hint { font-size: 12px; color: var(--text-muted); }
+  .options-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 8px;
+  }
+  .opt-card {
+    background: var(--bg-elev-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .opt-card:hover { background: #243044; border-color: #2d3a4f; }
+  .opt-card.active { border-color: var(--accent); background: rgba(16, 185, 129, 0.08); }
+  .opt-card-header {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  }
+  .opt-card-label { font-size: 13px; font-weight: 600; color: var(--text); }
+  .opt-card.active .opt-card-label { color: var(--accent-hover); }
+  .opt-card-num {
+    background: rgba(255,255,255,0.08);
+    color: var(--text-muted);
+    font-size: 11px; padding: 1px 6px;
+    border-radius: 4px; font-weight: 700;
+  }
+  .opt-card.active .opt-card-num {
+    background: rgba(16, 185, 129, 0.2);
+    color: var(--accent-hover);
+  }
+  .opt-card-host {
+    font-size: 11px; color: var(--text-muted);
+    font-family: monospace;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .opt-card-actions { display: flex; gap: 6px; }
+  .opt-mini-btn {
+    flex: 1;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 5px 8px;
+    border-radius: 5px;
+    font-size: 11px;
+    cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+    transition: all 0.15s ease;
+  }
+  .opt-mini-btn:hover { background: rgba(255,255,255,0.08); color: var(--text); }
+  .opt-mini-btn.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #06281c;
+    font-weight: 600;
+  }
+  .opt-mini-btn.primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+  .opt-mini-btn svg { width: 11px; height: 11px; fill: currentColor; }
+
+  .opt-mini-btn.tv {
+    background: rgba(99, 102, 241, 0.1);
+    border-color: rgba(99, 102, 241, 0.3);
+    color: #a5b4fc;
+  }
+  .opt-mini-btn.tv:hover {
+    background: rgba(99, 102, 241, 0.2);
+    color: #c7d2fe;
+  }
+
+  /* TV Modal */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 100;
+    display: none;
+    align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    width: 100%;
+    max-width: 560px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  }
+  .modal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    gap: 10px;
+  }
+  .modal-header h3 {
+    font-size: 16px; font-weight: 700;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .modal-header h3 svg { width: 20px; height: 20px; fill: var(--accent); }
+  .modal-close {
+    background: transparent; border: 0;
+    color: var(--text-muted); cursor: pointer;
+    width: 32px; height: 32px;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s ease;
+  }
+  .modal-close:hover { background: var(--bg-elev-2); color: var(--text); }
+  .modal-close svg { width: 18px; height: 18px; fill: currentColor; }
+
+  .modal-body { padding: 20px; }
+
+  .qr-section {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 12px; margin-bottom: 20px;
+  }
+  .qr-frame {
+    background: #fff;
+    padding: 12px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+  .qr-frame img { display: block; width: 240px; height: 240px; }
+  .qr-label {
+    font-size: 12px; color: var(--text-muted);
+    text-align: center;
+  }
+  .qr-label strong { color: var(--text); }
+
+  .url-display {
+    background: var(--bg-elev-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .url-display-text {
+    flex: 1;
+    font-family: monospace; font-size: 12px;
+    color: var(--text);
+    word-break: break-all;
+    line-height: 1.4;
+  }
+  .copy-btn {
+    background: var(--accent);
+    border: 0;
+    color: #06281c;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+  }
+  .copy-btn:hover { background: var(--accent-hover); }
+  .copy-btn.copied { background: #3b82f6; color: #fff; }
+
+  .modal-action-row {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px;
+  }
+  .modal-action-btn {
+    flex: 1;
+    min-width: 140px;
+    background: var(--bg-elev-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    transition: all 0.15s ease;
+  }
+  .modal-action-btn:hover { background: #243044; border-color: #2d3a4f; }
+  .modal-action-btn.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #06281c;
+  }
+  .modal-action-btn.primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+  .modal-action-btn svg { width: 16px; height: 16px; fill: currentColor; }
+
+  .cast-btn {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    border: 0;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%;
+    margin-bottom: 16px;
+    transition: all 0.15s ease;
+  }
+  .cast-btn:hover { filter: brightness(1.1); }
+  .cast-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .cast-btn svg { width: 20px; height: 20px; fill: currentColor; }
+
+  .device-list {
+    background: var(--bg-elev-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 16px;
+    display: none;
+  }
+  .device-list.show { display: block; }
+  .device-list-title {
+    font-size: 12px; color: var(--text-muted);
+    margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .device-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .device-item:hover { background: rgba(255,255,255,0.05); }
+  .device-item svg { width: 18px; height: 18px; fill: var(--text-muted); }
+  .device-item .device-name { flex: 1; font-size: 13px; color: var(--text); }
+  .device-item .device-status { font-size: 11px; color: var(--text-muted); }
+
+  .tv-instructions {
+    background: var(--bg-elev-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .tv-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+  }
+  .tv-tab {
+    background: transparent;
+    border: 0;
+    color: var(--text-muted);
+    padding: 10px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+  }
+  .tv-tab:hover { color: var(--text); }
+  .tv-tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+  .tv-tab-content {
+    padding: 14px;
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+  .tv-tab-content[hidden] { display: none; }
+  .tv-tab-content strong { color: var(--text); }
+  .tv-tab-content ol {
+    margin: 8px 0 0 18px;
+  }
+  .tv-tab-content ol li { margin-bottom: 6px; }
+  .tv-tab-content .kbd {
+    background: rgba(255,255,255,0.08);
+    color: var(--text);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-family: monospace;
+  }
+
+  /* Install button */
+  .install-btn {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border: 0;
+    color: #06281c;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s ease;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+  }
+  .install-btn:hover { filter: brightness(1.1); }
+  .install-btn[hidden] { display: none; }
+  .install-btn svg { width: 16px; height: 16px; fill: currentColor; }
+
+  /* Today's games section */
+  .today-card {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+  }
+  .today-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 12px; gap: 10px; flex-wrap: wrap;
+  }
+  .today-title {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 14px; font-weight: 700; color: var(--text);
+  }
+  .today-title svg { width: 18px; height: 18px; fill: var(--accent); }
+  .today-date {
+    font-size: 12px; color: var(--text-muted);
+    font-weight: 400;
+  }
+  .today-actions { display: flex; gap: 6px; }
+  .today-action-btn {
+    background: var(--bg-elev-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.15s ease;
+  }
+  .today-action-btn:hover { background: #243044; border-color: #2d3a4f; }
+  .today-action-btn svg { width: 14px; height: 14px; fill: currentColor; }
+
+  .today-loading {
+    display: flex; align-items: center; justify-content: center;
+    gap: 8px; padding: 20px;
+    color: var(--text-muted); font-size: 13px;
+  }
+  .today-loading .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  .today-empty {
+    text-align: center;
+    padding: 16px;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+
+  .games-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 10px;
+    max-height: 380px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+  .games-grid::-webkit-scrollbar { width: 8px; }
+  .games-grid::-webkit-scrollbar-track { background: var(--bg-elev-2); border-radius: 4px; }
+  .games-grid::-webkit-scrollbar-thumb { background: #2d3a4f; border-radius: 4px; }
+  .games-grid::-webkit-scrollbar-thumb:hover { background: #3a4860; }
+
+  .game-card {
+    background: var(--bg-elev-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    position: relative;
+  }
+  .game-card:hover {
+    background: #243044;
+    border-color: var(--accent);
+    transform: translateY(-1px);
+  }
+  .game-card.live::before {
+    content: '';
+    position: absolute;
+    top: 8px; right: 8px;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #ef4444;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+  .game-thumb {
+    width: 100%;
+    height: 70px;
+    background-size: cover;
+    background-position: center;
+    background-color: var(--bg);
+    border-radius: 6px;
+    margin-bottom: 4px;
+    opacity: 0.85;
+  }
+  .game-card:hover .game-thumb { opacity: 1; }
+  .game-teams {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.3;
+  }
+  .game-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .game-comp {
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+  }
+  .game-comp.copa-do-brasil { color: #fbbf24; }
+  .game-comp.brasileirao, .game-comp.serie-a, .game-comp.serie-b { color: #10b981; }
+  .game-comp.libertadores { color: #60a5fa; }
+  .game-comp.champions, .game-comp.champions-league { color: #a78bfa; }
+  .game-comp.premier-league { color: #f472b6; }
+  .game-comp.ligue-1, .game-comp.ligue1 { color: #34d399; }
+  .game-comp.bundesliga { color: #fde047; }
+  .game-comp.la-liga { color: #fb7185; }
+
+  .game-time {
+    font-family: monospace;
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  /* Source badge */
+  .source-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(99, 102, 241, 0.12);
+    color: #a5b4fc;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .source-badge svg { width: 10px; height: 10px; fill: currentColor; }
+
+  /* Search multi-source results */
+  .multi-source-results {
+    margin-top: 12px;
+    display: none;
+  }
+  .multi-source-results.show { display: block; }
+  .multi-source-results-title {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing:0.5px;
+  }
+  .source-result-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px;
+    background: var(--bg-elev-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .source-result-item:hover { background: #243044; border-color: #2d3a4f; }
+  .source-result-item.found { border-left: 3px solid var(--accent); }
+  .source-result-item.not-found { opacity: 0.5; }
+  .source-result-status {
+    width: 16px; height: 16px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+  }
+  .source-result-status.found { background: var(--accent); color: #06281c; }
+  .source-result-status.loading { background: var(--bg-elev); color: var(--text-muted); }
+  .source-result-status.not-found { background: var(--bg-elev); color: var(--text-muted); }
+  .source-result-name { flex: 1; font-size: 13px; color: var(--text); font-weight: 600; }
+  .source-result-meta { font-size: 11px; color: var(--text-muted); }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+
+  /* Loading overlay */
+  .loading {
+    position: absolute; inset: 0;
+    background: rgba(10, 14, 20, 0.9);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+  }
+  .loading.show { display: flex; }
+  .spinner {
+    width: 32px; height: 32px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* History */
+  .history-row {
+    margin-top: 10px;
+    display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+    font-size: 11px; color: var(--text-muted);
+  }
+  .history-chip {
+    background: var(--bg-elev-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 3px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11px;
+    font-family: monospace;
+    max-width: 220px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    transition: all 0.15s ease;
+  }
+  .history-chip:hover { background: #243044; border-color: #2d3a4f; }
+  .history-clear {
+    color: var(--text-muted);
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    font-size: 11px;
+    text-decoration: underline;
+  }
+  .history-clear:hover { color: var(--error); }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 12px 20px;
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  @media (max-width: 640px) {
+    main { padding: 10px; }
+    .options-grid { grid-template-columns: 1fr; }
+    .url-input { font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="brand">
+      <div class="logo">F</div>
+      <div>
+        FuteMAX Clean Player
+        <div class="subtitle">Assista sem propagandas · cole qualquer link de jogo</div>
+      </div>
+    </div>
+    <button class="install-btn" id="btn-install" hidden>
+      <svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM12 2l-1 1 5 5h-3v6h2V8h3l-5 5-1 1z"/></svg>
+      Instalar app
+    </button>
+  </div>
+</header>
+
+<main>
+  <!-- Today's Games -->
+  <div class="today-card">
+    <div class="today-header">
+      <div class="today-title">
+        <svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>
+        Jogos de hoje
+        <span class="today-date" id="today-date">—</span>
+      </div>
+      <div class="today-actions">
+        <button class="today-action-btn" id="btn-refresh-today" title="Atualizar lista">
+          <svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.74 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4z"/></svg>
+          Atualizar
+        </button>
+        <button class="today-action-btn" id="btn-toggle-today" title="Mostrar/ocultar">
+          <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7zm-2-4h2V7h3V5H5zm12 7h-3v2h5v-5h-2zM14 5v2h3v3h2V5z"/></svg>
+        </button>
+      </div>
+    </div>
+    <div id="today-content"></div>
+  </div>
+
+  <!-- URL Input -->
+  <div class="url-card">
+    <div class="url-row">
+      <input
+        type="url"
+        id="url-input"
+        class="url-input"
+        placeholder="Cole aqui o link do jogo (futemax.ke, multicanais.tv, futebolplayhd.com, etc.)"
+        value="https://futemax.ke/gremio-x-internacional-ao-vivo-03-09-2026/"
+      >
+      <button class="btn-primary" id="btn-load">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        Carregar players
+      </button>
+      <button class="btn-secondary" id="btn-toggle-manual">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+        Colar HTML manualmente
+      </button>
+    </div>
+    <div class="url-hint">
+      Suporta múltiplas fontes: <code>futemax.ke</code>, <code>multicanais.tv</code>, <code>futebolplayhd.com</code> e outros sites com o padrão de botões "Opção 1, 2, 3...".
+      <br>
+      <button class="history-clear" id="btn-search-sources" style="margin-top:6px;color:var(--accent);text-decoration:none;font-weight:600;">
+        ↻ Buscar este jogo em outras fontes
+      </button>
+    </div>
+    <div class="multi-source-results" id="multi-source-results">
+      <div class="multi-source-results-title">Resultados em outras fontes</div>
+      <div id="multi-source-list"></div>
+    </div>
+    <div class="history-row" id="history-row" style="display:none;">
+      <span>Histórico:</span>
+      <div id="history-chips" style="display:inline-flex;gap:6px;flex-wrap:wrap;"></div>
+      <button class="history-clear" id="btn-clear-history">limpar</button>
+    </div>
+  </div>
+
+  <!-- Status -->
+  <div class="status" id="status"></div>
+
+  <!-- Manual HTML paste -->
+  <div class="manual-card" id="manual-card">
+    <h4>Modo manual (se o fetch automático falhar)</h4>
+    <ol>
+      <li>Abra o link do jogo no seu navegador</li>
+      <li>Clique com o botão direito → <strong>"Ver código-fonte"</strong> (ou Ctrl+U)</li>
+      <li>Selecione tudo (Ctrl+A) e copie (Ctrl+C)</li>
+      <li>Cole o HTML completo na caixa abaixo</li>
+    </ol>
+    <textarea id="manual-html" placeholder="Cole aqui o código-fonte HTML completo da página do futemax..."></textarea>
+    <div class="manual-actions">
+      <button class="btn-primary" id="btn-parse-manual">Extrair players do HTML</button>
+      <button class="btn-secondary" id="btn-close-manual">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- Match banner -->
+  <div class="match-banner" id="match-banner">
+    <div class="match-title" id="match-title">—</div>
+    <div class="match-meta-row">
+      <span id="match-date"></span>
+      <span id="match-source"></span>
+    </div>
+  </div>
+
+  <!-- Player section -->
+  <div class="player-section" id="player-section">
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <span id="current-source">Nenhuma opção selecionada</span>
+      </div>
+      <div class="toolbar-right">
+        <button class="tool-btn" id="btn-reload" title="Recarregar player">
+          <svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.74 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4z"/></svg>
+          Recarregar
+        </button>
+        <button class="tool-btn" id="btn-fullscreen" title="Tela cheia">
+          <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7zm-2-4h2V7h3V5H5zm12 7h-3v2h5v-5h-2zM14 5v2h3v3h2V5z"/></svg>
+          Tela cheia
+        </button>
+        <button class="tool-btn" id="btn-popout" title="Abrir em nova aba">
+          <svg viewBox="0 0 24 24"><path d="M14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3m-2 16H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7h-2z"/></svg>
+          Nova aba
+        </button>
+      </div>
+    </div>
+
+    <div class="player-wrap" id="player-wrap">
+      <div class="player-placeholder" id="placeholder">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        </div>
+        <h2>Escolha uma opção de player</h2>
+        <p>Selecione abaixo uma das opções para começar a assistir. Se a opção não carregar aqui dentro, use o botão <strong>"Nova aba"</strong> para abrir direto no servidor.</p>
+      </div>
+      <div class="loading" id="loading"><div class="spinner"></div></div>
+      <iframe id="player-iframe" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="no-referrer"></iframe>
+    </div>
+
+    <div class="options-bar">
+      <div class="options-title">
+        <h3>Opções de Player</h3>
+        <span class="hint" id="options-hint">— servidores · se algum falhar aqui, tente "Nova aba"</span>
+      </div>
+      <div class="options-grid" id="options-grid"></div>
+    </div>
+  </div>
+
+  <div class="empty-state" id="empty-state">
+    Cole um link acima e clique em <strong>"Carregar players"</strong> para começar.
+  </div>
+</main>
+
+<footer>
+  Player clean sem propagandas · ferramenta pessoal para assistir jogos do futemax sem anúncios
+</footer>
+
+<script>
+(function () {
+  // -------- State --------
+  let SOURCES = [];
+  let activeId = null;
+  let loadTimer = null;
+
+  // -------- DOM refs --------
+  const urlInput     = document.getElementById('url-input');
+  const btnLoad      = document.getElementById('btn-load');
+  const btnManual    = document.getElementById('btn-toggle-manual');
+  const manualCard   = document.getElementById('manual-card');
+  const manualHtml   = document.getElementById('manual-html');
+  const btnParseMan  = document.getElementById('btn-parse-manual');
+  const btnCloseMan  = document.getElementById('btn-close-manual');
+
+  const status       = document.getElementById('status');
+  const matchBanner  = document.getElementById('match-banner');
+  const matchTitle   = document.getElementById('match-title');
+  const matchDate    = document.getElementById('match-date');
+  const matchSource  = document.getElementById('match-source');
+  const playerSection= document.getElementById('player-section');
+  const emptyState   = document.getElementById('empty-state');
+
+  const grid         = document.getElementById('options-grid');
+  const optionsHint  = document.getElementById('options-hint');
+  const iframe       = document.getElementById('player-iframe');
+  const placeholder  = document.getElementById('placeholder');
+  const loading      = document.getElementById('loading');
+  const currentSource= document.getElementById('current-source');
+  const playerWrap   = document.getElementById('player-wrap');
+
+  const historyRow   = document.getElementById('history-row');
+  const historyChips = document.getElementById('history-chips');
+  const btnClearHist  = document.getElementById('btn-clear-history');
+
+  iframe.style.display = 'none';
+
+  // -------- Status helper --------
+  function showStatus(msg, type, html) {
+    status.className = 'status show ' + type;
+    status.innerHTML = '';
+    const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    icon.setAttribute('viewBox', '0 0 24 24');
+    if (type === 'err') {
+      icon.innerHTML = '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/>';
+    } else if (type === 'warn') {
+      icon.innerHTML = '<path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" fill="currentColor"/>';
+    } else {
+      icon.innerHTML = '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor"/>';
+    }
+    status.appendChild(icon);
+    const div = document.createElement('div');
+    if (html) { div.innerHTML = msg; } else { div.textContent = msg; }
+    status.appendChild(div);
+  }
+  function clearStatus() { status.className = 'status'; status.innerHTML = ''; }
+
+  // -------- HTML parsing --------
+  function extractPlayersFromHTML(rawHtml) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(rawHtml, 'text/html');
+
+    // Title
+    const title = doc.querySelector('title')?.textContent?.trim() || doc.querySelector('meta[property="og:title"]')?.getAttribute('content') || '';
+    const desc  = doc.querySelector('meta[name="description"]')?.getAttribute('content') || doc.querySelector('meta[property="og:description"]')?.getAttribute('content') || '';
+    const pubTime = doc.querySelector('meta[property="article:published_time"]')?.getAttribute('content') || '';
+
+    // Extract player buttons: any element with data-src attribute that points to a URL
+    // The futemax pattern is: <button class="btn-style btn" data-src="https://...">
+    const seen = new Set();
+    const sources = [];
+    const buttons = doc.querySelectorAll('[data-src]');
+    let idx = 1;
+    buttons.forEach(btn => {
+      const src = btn.getAttribute('data-src') || '';
+      if (!src || !src.startsWith('http')) return;
+      // Heuristic: keep if the URL looks like a player/streaming endpoint.
+      // We accept either the URL contains common player keywords OR the button
+      // belongs to the futemax .btn-style pattern (game option buttons).
+      const isFutemaxBtn = (btn.className || '').includes('btn-style') || (btn.className || '').includes('btn-player');
+      const looksLikePlayer = /player|embed|stream|live|evento|canal|channels|ch\.php|primevideo|sportv|espn|premiere|globo|sbt|band|tnt|space|paramount|combate|ufc|formula|xsports|tv\/|extra\/|ao-?vivo/i.test(src);
+      if (isFutemaxBtn || looksLikePlayer) {
+        const clean = src.replace(/&amp;/g, '&');
+        if (seen.has(clean)) return;
+        seen.add(clean);
+        let host = '';
+        try {
+          host = new URL(clean).hostname.replace(/^www\./, '').replace(/^ww\d+\./, '').replace(/^w\d+\./, '');
+        } catch (e) { host = clean.substring(0, 40); }
+        sources.push({
+          id: idx++,
+          label: 'Opção ' + idx,
+          host: host,
+          src: clean,
+          btnText: btn.textContent?.trim() || ''
+        });
+      }
+    });
+    // Reassign sequential ids/labels
+    sources.forEach((s, i) => {
+      s.id = i + 1;
+      s.label = 'Opção ' + (i + 1);
+    });
+
+    return { title, desc, pubTime, sources };
+  }
+
+  // -------- CORS proxies (fallback chain) --------
+  // NOTE: Public CORS proxies are flaky — they may rate-limit or go offline without notice.
+  // If automatic loading fails, the page always offers a manual mode as guaranteed fallback.
+  const PROXIES = [
+    { name: 'cors.sh',       wrap: (u) => 'https://proxy.cors.sh/' + u },
+    { name: 'corsproxy.io', wrap: (u) => 'https://corsproxy.io/?url=' + encodeURIComponent(u) },
+    { name: 'allorigins',    wrap: (u) => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u) },
+    { name: 'codetabs',      wrap: (u) => 'https://api.codetabs.com/v1/proxy/?quest=' + encodeURIComponent(u) },
+    { name: 'thingproxy',    wrap: (u) => 'https://thingproxy.freeboard.io/fetch/' + u }
+  ];
+
+  async function fetchWithProxies(url, timeoutMs = 10000) {
+    let lastErr = null;
+    for (const p of PROXIES) {
+      try {
+        const target = p.wrap(url);
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), timeoutMs);
+        const res = await fetch(target, {
+          method: 'GET',
+          signal: ctrl.signal,
+          headers: { 'Accept': 'text/html,application/xhtml+xml' }
+        });
+        clearTimeout(t);
+        if (!res.ok) { lastErr = new Error(p.name + ' HTTP ' + res.status); continue; }
+        const text = await res.text();
+        if (text && text.length > 500) {
+          return { html: text, via: p.name };
+        }
+        lastErr = new Error(p.name + ' returned empty');
+      } catch (e) {
+        lastErr = e;
+      }
+    }
+    throw lastErr || new Error('Todos os proxies falharam');
+  }
+
+  // -------- Main loader --------
+  async function loadFromUrl(url) {
+    if (!url) { showStatus('Cole um link primeiro.', 'warn'); return; }
+    let u;
+    try { u = new URL(url); }
+    catch (e) { showStatus('Link inválido. Tem que começar com http(s)://', 'err'); return; }
+
+    clearStatus();
+    btnLoad.disabled = true;
+    btnLoad.textContent = 'Carregando...';
+    showStatus('Buscando página em <code>' + u.hostname + '</code>...', 'info', true);
+
+    try {
+      const { html, via } = await fetchWithProxies(url);
+      showStatus('Página carregada via <strong>' + via + '</strong>. Extraindo players...', 'info', true);
+      const parsed = extractPlayersFromHTML(html);
+      if (!parsed.sources.length) {
+        throw new Error('Nenhum player encontrado nesta página. Verifique se o link é de um jogo específico no futemax.');
+      }
+      renderPlayers(parsed, u.href);
+      addToHistory(u.href);
+      clearStatus();
+      showStatus('Pronto! <strong>' + parsed.sources.length + '</strong> opções de player encontradas para "' + (parsed.title || u.href) + '".', 'info', true);
+    } catch (e) {
+      console.error(e);
+      showStatus(
+        'Não consegui buscar a página automaticamente (CORS bloqueado). ' +
+        'Tente o <strong>modo manual</strong>: clique em "Colar HTML manualmente", ' +
+        'abra o link no navegador, copie o código-fonte (Ctrl+U → Ctrl+A → Ctrl+C) e cole na caixa. ' +
+        '<br><br>Erro técnico: ' + (e.message || e),
+        'err',
+        true
+      );
+      manualCard.classList.add('show');
+    } finally {
+      btnLoad.disabled = false;
+      btnLoad.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> Carregar players';
+    }
+  }
+
+  // -------- Render players --------
+  function renderPlayers(parsed, sourceUrl) {
+    SOURCES = parsed.sources;
+    activeId = null;
+    grid.innerHTML = '';
+
+    // Match banner
+    if (parsed.title) {
+      matchTitle.textContent = parsed.title;
+      matchBanner.classList.add('show');
+    } else {
+      matchBanner.classList.remove('show');
+    }
+    if (parsed.pubTime) {
+      try {
+        const d = new Date(parsed.pubTime);
+        matchDate.textContent = d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+      } catch(e) { matchDate.textContent = parsed.pubTime; }
+    } else {
+      matchDate.textContent = '';
+    }
+    let hostLabel = '';
+    try { hostLabel = new URL(sourceUrl).hostname; } catch(e) { hostLabel = sourceUrl; }
+    matchSource.innerHTML = 'Fonte: <span style="color:var(--accent);">' + hostLabel + '</span>';
+
+    optionsHint.textContent = parsed.sources.length + ' servidores · se algum falhar aqui, tente "Nova aba"';
+
+    // Reset player
+    iframe.src = 'about:blank';
+    iframe.style.display = 'none';
+    placeholder.classList.remove('hidden');
+
+    // Build cards
+    SOURCES.forEach(s => {
+      const card = document.createElement('div');
+      card.className = 'opt-card';
+      card.dataset.id = s.id;
+      card.innerHTML = `
+        <div class="opt-card-header">
+          <span class="opt-card-label">${s.label}</span>
+          <span class="opt-card-num">${s.id}</span>
+        </div>
+        <div class="opt-card-host" title="${s.src}">${s.host}</div>
+        <div class="opt-card-actions">
+          <button class="opt-mini-btn primary" data-action="embed" title="Carregar aqui no player">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            Assistir
+          </button>
+          <button class="opt-mini-btn" data-action="popout" title="Abrir em nova aba">
+            <svg viewBox="0 0 24 24"><path d="M14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3m-2 16H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7h-2z"/></svg>
+            Nova aba
+          </button>
+          <button class="opt-mini-btn tv" data-action="tv" title="Enviar para TV (QR Code / Chromecast / AirPlay)">
+            <svg viewBox="0 0 24 24"><path d="M21 17H3V5h18m0-2H3c-1.11 0-2 .89-2 2v12a2 2 0 0 0 2 2h7v2H8v2h8v-2h-2v-2h7a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"/></svg>
+            TV
+          </button>
+        </div>
+      `;
+
+      card.addEventListener('click', (e) => {
+        if (e.target.closest('button')) return;
+        setActive(s.id);
+        embedSource(s.src, s.label);
+      });
+
+      card.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const action = btn.dataset.action;
+          if (action === 'embed') {
+            setActive(s.id);
+            embedSource(s.src, s.label);
+          } else if (action === 'popout') {
+            popOutSource(s.src, s.label);
+          } else if (action === 'tv') {
+            openTvModal(s.src, s.label);
+          }
+        });
+      });
+
+      grid.appendChild(card);
+    });
+
+    emptyState.style.display = 'none';
+    playerSection.classList.add('show');
+  }
+
+  function setActive(id) {
+    activeId = id;
+    document.querySelectorAll('.opt-card').forEach(c => {
+      c.classList.toggle('active', parseInt(c.dataset.id, 10) === id);
+    });
+  }
+
+  function embedSource(src, label) {
+    loading.classList.add('show');
+    iframe.style.display = 'block';
+    iframe.src = src;
+    placeholder.classList.add('hidden');
+    currentSource.textContent = 'Reproduzindo: ' + label + ' (embed)';
+
+    clearTimeout(loadTimer);
+    const cleanup = () => {
+      loading.classList.remove('show');
+      iframe.removeEventListener('load', cleanup);
+    };
+    iframe.addEventListener('load', cleanup);
+    loadTimer = setTimeout(cleanup, 8000);
+  }
+
+  function popOutSource(src, label) {
+    currentSource.textContent = 'Abrindo em nova aba: ' + label;
+    window.open(src, '_blank', 'noopener,noreferrer,width=1100,height=700');
+  }
+
+  // -------- History --------
+  const HISTORY_KEY = 'futemax_clean_history';
+  function loadHistory() {
+    try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); }
+    catch (e) { return []; }
+  }
+  function saveHistory(arr) {
+    try { localStorage.setItem(HISTORY_KEY, JSON.stringify(arr.slice(0, 10))); } catch(e){}
+  }
+  function addToHistory(url) {
+    let h = loadHistory().filter(u => u !== url);
+    h.unshift(url);
+    h = h.slice(0, 10);
+    saveHistory(h);
+    renderHistory();
+  }
+  function renderHistory() {
+    const h = loadHistory();
+    if (!h.length) { historyRow.style.display = 'none'; return; }
+    historyRow.style.display = 'flex';
+    historyChips.innerHTML = '';
+    h.forEach(url => {
+      const chip = document.createElement('span');
+      chip.className = 'history-chip';
+      chip.title = url;
+      let label = url;
+      try { label = decodeURIComponent(new URL(url).pathname.replace(/\//g, ' ').trim()).substring(0, 30); }
+      catch(e){}
+      chip.textContent = label || url;
+      chip.addEventListener('click', () => {
+        urlInput.value = url;
+        loadFromUrl(url);
+      });
+      historyChips.appendChild(chip);
+    });
+  }
+
+  // -------- Event listeners --------
+  btnLoad.addEventListener('click', () => loadFromUrl(urlInput.value.trim()));
+  urlInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') loadFromUrl(urlInput.value.trim());
+  });
+
+  btnManual.addEventListener('click', () => {
+    manualCard.classList.toggle('show');
+    if (manualCard.classList.contains('show')) {
+      manualHtml.focus();
+    }
+  });
+  btnCloseMan.addEventListener('click', () => manualCard.classList.remove('show'));
+  btnParseMan.addEventListener('click', () => {
+    const html = manualHtml.value.trim();
+    if (!html) { showStatus('Cole o HTML primeiro.', 'warn'); return; }
+    try {
+      const parsed = extractPlayersFromHTML(html);
+      if (!parsed.sources.length) {
+        showStatus('Nenhum player encontrado no HTML colado. Verifique se copiou o código-fonte completo da página.', 'err');
+        return;
+      }
+      renderPlayers(parsed, urlInput.value.trim() || 'manual-paste');
+      manualCard.classList.remove('show');
+      showStatus('Pronto! <strong>' + parsed.sources.length + '</strong> opções de player encontradas via colagem manual.', 'info', true);
+    } catch (e) {
+      showStatus('Erro ao processar o HTML: ' + e.message, 'err');
+    }
+  });
+
+  document.getElementById('btn-reload').addEventListener('click', () => {
+    if (!iframe.src || iframe.src === 'about:blank') return;
+    const src = iframe.src;
+    iframe.src = 'about:blank';
+    setTimeout(() => { iframe.src = src; }, 50);
+  });
+
+  document.getElementById('btn-fullscreen').addEventListener('click', () => {
+    if (!document.fullscreenElement) {
+      (playerWrap.requestFullscreen || playerWrap.webkitRequestFullscreen || function(){}).call(playerWrap);
+    } else {
+      (document.exitFullscreen || document.webkitExitFullscreen || function(){}).call(document);
+    }
+  });
+
+  document.getElementById('btn-popout').addEventListener('click', () => {
+    const active = SOURCES.find(s => s.id === activeId);
+    if (active) popOutSource(active.src, active.label);
+  });
+
+  btnClearHist.addEventListener('click', () => {
+    if (confirm('Limpar todo o histórico?')) {
+      saveHistory([]);
+      renderHistory();
+    }
+  });
+
+  // Keyboard shortcuts
+  document.addEventListener('keydown', (e) => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    if (e.key === 'f' || e.key === 'F') {
+      document.getElementById('btn-fullscreen').click();
+    } else if (e.key >= '1' && e.key <= '9') {
+      const idx = parseInt(e.key, 10) - 1;
+      if (SOURCES[idx]) {
+        setActive(SOURCES[idx].id);
+        embedSource(SOURCES[idx].src, SOURCES[idx].label);
+      }
+    } else if (e.key === 'r' || e.key === 'R') {
+      document.getElementById('btn-reload').click();
+    }
+  });
+
+  // Auto-load default URL on first open
+  renderHistory();
+  // Don't auto-fetch on load (might fail silently); let user click
+
+  // ============================================================
+  // PWA — Install button + Service Worker registration
+  // ============================================================
+  let deferredPrompt = null;
+  const installBtn = document.getElementById('btn-install');
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installBtn.hidden = false;
+  });
+  installBtn.addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      installBtn.hidden = true;
+    }
+    deferredPrompt = null;
+  });
+  window.addEventListener('appinstalled', () => {
+    installBtn.hidden = true;
+  });
+  // Register Service Worker (only works on https or localhost)
+  if ('serviceWorker' in navigator) {
+    const swPath = './sw.js';
+    navigator.serviceWorker.register(swPath).then((reg) => {
+      console.log('[PWA] Service Worker registered:', reg.scope);
+    }).catch((err) => {
+      console.warn('[PWA] SW registration failed:', err);
+    });
+  }
+
+  // ============================================================
+  // Multi-source adapters
+  // ============================================================
+  // Each adapter: { name, hostnamePattern, playerSelector, extractSrc }
+  // The selector returns array of URLs (player sources)
+  const SOURCE_ADAPTERS = [
+    {
+      name: 'futemax',
+      label: 'FuteMAX',
+      hostMatch: /futemax\.(ke|app|tv|bet|com|net|org)/i,
+      // Futemax pattern: <button class="btn-style btn" data-src="URL">
+      extract: (doc) => {
+        const urls = [];
+        doc.querySelectorAll('[data-src]').forEach(btn => {
+          const src = (btn.getAttribute('data-src') || '').replace(/&amp;/g, '&');
+          if (src.startsWith('http')) {
+            const isFutemaxBtn = (btn.className || '').includes('btn-style');
+            const looksLikePlayer = /player|embed|stream|live|evento|canal|channels|ch\.php|primevideo|sportv|espn|premiere|globo|sbt|band|tnt|space|paramount|combate|ufc|formula|xsports|tv\/|extra\/|ao-?vivo/i.test(src);
+            if (isFutemaxBtn || looksLikePlayer) urls.push(src);
+          }
+        });
+        return urls;
+      }
+    },
+    {
+      name: 'multicanais',
+      label: 'MultiCanais',
+      hostMatch: /multicanais\.(tv|com|net|org)/i,
+      extract: (doc) => {
+        const urls = [];
+        // MultiCanais pattern: similar btn-style + data-src, but also iframes
+        doc.querySelectorAll('[data-src]').forEach(btn => {
+          const src = (btn.getAttribute('data-src') || '').replace(/&amp;/g, '&');
+          if (src.startsWith('http')) urls.push(src);
+        });
+        // Fallback: iframes with player/stream keywords
+        doc.querySelectorAll('iframe[src]').forEach(iframe => {
+          const src = (iframe.getAttribute('src') || '').replace(/&amp;/g, '&');
+          if (src && /player|embed|stream|live/i.test(src)) urls.push(src);
+        });
+        return urls;
+      }
+    },
+    {
+      name: 'futebolplayhd',
+      label: 'Futebol Play HD',
+      hostMatch: /futebolplayhd\.(com|tv|net)/i,
+      extract: (doc) => {
+        const urls = [];
+        doc.querySelectorAll('iframe[src]').forEach(iframe => {
+          const src = (iframe.getAttribute('src') || '').replace(/&amp;/g, '&');
+          if (src && /player|embed|stream|live|tv/i.test(src)) urls.push(src);
+        });
+        doc.querySelectorAll('[data-src]').forEach(btn => {
+          const src = (btn.getAttribute('data-src') || '').replace(/&amp;/g, '&');
+          if (src.startsWith('http')) urls.push(src);
+        });
+        return urls;
+      }
+    },
+    {
+      name: 'generic',
+      label: 'Genérico',
+      hostMatch: /.*/, // fallback
+      extract: (doc) => {
+        const urls = [];
+        doc.querySelectorAll('[data-src]').forEach(btn => {
+          const src = (btn.getAttribute('data-src') || '').replace(/&amp;/g, '&');
+          if (src.startsWith('http')) {
+            const looksLikePlayer = /player|embed|stream|live|evento|canal|channels|ch\.php|primevideo|sportv|espn|premiere|globo|sbt|band|tnt|space|paramount|combate|ufc|formula|xsports|tv\/|extra\/|ao-?vivo/i.test(src);
+            if (looksLikePlayer) urls.push(src);
+          }
+        });
+        // Fallback: iframes
+        doc.querySelectorAll('iframe[src]').forEach(iframe => {
+          const src = (iframe.getAttribute('src') || '').replace(/&amp;/g, '&');
+          if (src && /player|embed|stream|live/i.test(src)) urls.push(src);
+        });
+        return urls;
+      }
+    }
+  ];
+
+  function getAdapterForUrl(url) {
+    try {
+      const host = new URL(url).hostname;
+      for (const a of SOURCE_ADAPTERS) {
+        if (a.hostMatch && a.hostMatch !== /.*/ && a.hostMatch.test(host)) return a;
+      }
+    } catch(e){}
+    return SOURCE_ADAPTERS[SOURCE_ADAPTERS.length - 1]; // generic
+  }
+
+  // ============================================================
+  // Today's Games parser (futemax homepage)
+  // ============================================================
+  const todayContent = document.getElementById('today-content');
+  const todayDateEl = document.getElementById('today-date');
+  const todayCard = document.querySelector('.today-card');
+
+  function getTodayStr() {
+    const d = new Date();
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const yyyy = d.getFullYear();
+    return { dd, mm, yyyy, str: `${dd}-${mm}-${yyyy}`, display: d.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' }) };
+  }
+
+  function extractGamesFromHomepage(html) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+    const today = getTodayStr();
+    const games = [];
+
+    // Futemax homepage pattern:
+    // <div class="fm-card">
+    //   <a href="https://futemax.ke/SLUG-ao-vivo-DD-MM-YYYY/">
+    //     <div class="bg" style="background-image:url(...)"></div>
+    //     <div class="txt">
+    //       <h2>Title</h2>
+    //     </div>
+    //   </a>
+    // </div>
+
+    // Find all <a> tags whose href matches the game URL pattern
+    const gameLinks = doc.querySelectorAll('a[href*="-ao-vivo-"]');
+    const seen = new Set();
+
+    gameLinks.forEach(a => {
+      const href = (a.getAttribute('href') || '').trim();
+      if (!href || seen.has(href)) return;
+
+      const match = href.match(/\/([^/]+)-ao-vivo-(\d{2})-(\d{2})-(\d{4})\/?$/);
+      if (!match) return;
+
+      const slug = match[1];
+      const day = match[2], month = match[3], year = match[4];
+      const gameDate = `${day}-${month}-${year}`;
+      const isToday = (gameDate === today.str);
+      const gameJsDate = new Date(`${year}-${month}-${day}T00:00:00`);
+      const todayJsDate = new Date(`${today.yyyy}-${today.mm}-${today.dd}T00:00:00`);
+      const isPast = gameJsDate < todayJsDate;
+
+      // Get title from heading inside the <a>
+      const heading = a.querySelector('h1, h2, h3, h4, h5, h6');
+      const title = (heading?.textContent || a.textContent || '').trim().replace(/\s+ao vivo.*$/i, '').replace(/\s+\d{2}\/\d{2}\/\d{4}.*$/i, '').trim();
+
+      // Parse teams from slug
+      const parts = slug.split('-x-');
+      let team1 = '', team2 = '';
+      if (parts.length === 2) {
+        team1 = parts[0].replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        team2 = parts[1].replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      } else {
+        team1 = title;
+      }
+
+      // Try to detect competition from URL or nearby context
+      let competition = '';
+      const compMatch = href.match(/(copa-do-brasil|brasileirao|serie-a|serie-b|libertadores|champions|premier-league|bundesliga|ligue-1|la-liga|sul-americana)/i);
+      if (compMatch) competition = compMatch[1].replace(/-/g, ' ');
+
+      // Get background image (thumbnail) if available
+      const bg = a.querySelector('.bg');
+      let thumb = '';
+      if (bg) {
+        const style = bg.getAttribute('style') || '';
+        const m = style.match(/url\(['"]?([^'")\s]+)['"]?\)/);
+        if (m) thumb = m[1];
+      }
+
+      seen.add(href);
+      games.push({
+        url: href,
+        title: title || `${team1} × ${team2}`,
+        team1, team2,
+        date: gameDate,
+        isToday, isPast,
+        competition,
+        thumb
+      });
+    });
+
+    return games;
+  }
+
+  // Robust fetch with AbortController (works in older browsers too)
+  function fetchWithTimeout(url, opts, timeoutMs) {
+    return new Promise((resolve, reject) => {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => { ctrl.abort(); reject(new Error('timeout')); }, timeoutMs);
+      fetch(url, { ...opts, signal: ctrl.signal })
+        .then(resolve, reject)
+        .finally(() => clearTimeout(t));
+    });
+  }
+
+  // Expanded CORS proxy chain (public proxies — best-effort, may be flaky)
+  // Uses the same proxies as PROXIES above (single source of truth)
+  const CORS_PROXIES = PROXIES;
+
+  async function fetchHtmlViaProxies(targetUrl, timeoutMs = 7000) {
+    const errors = [];
+    for (const p of CORS_PROXIES) {
+      try {
+        const res = await fetchWithTimeout(p.wrap(targetUrl), {
+          method: 'GET',
+          headers: { 'Accept': 'text/html,application/xhtml+xml' }
+        }, timeoutMs);
+        if (!res.ok) { errors.push(`${p.name}: HTTP ${res.status}`); continue; }
+        const text = await res.text();
+        if (text && text.length > 2000) {
+          return { html: text, via: p.name };
+        }
+        errors.push(`${p.name}: resposta curta (${text.length})`);
+      } catch (e) {
+        errors.push(`${p.name}: ${e.message || e}`);
+      }
+    }
+    throw new Error(errors.join(' | '));
+  }
+
+  async function loadTodayGames() {
+    const today = getTodayStr();
+    todayDateEl.textContent = '· ' + today.display;
+    todayContent.innerHTML = `
+      <div class="today-loading">
+        <div class="spinner"></div>
+        Buscando jogos de hoje via proxies CORS...
+      </div>
+    `;
+
+    try {
+      const homeUrl = 'https://futemax.ke/';
+      const { html, via } = await fetchHtmlViaProxies(homeUrl, 7000);
+      const games = extractGamesFromHomepage(html);
+      const todays = games.filter(g => g.isToday);
+      const tomorrows = games.filter(g => !g.isPast && !g.isToday);
+
+      if (!todays.length && !tomorrows.length) {
+        renderTodayEmpty();
+        return;
+      }
+
+      let html2 = '';
+      if (todays.length) {
+        html2 += `<div style="font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;font-weight:600;">Hoje (${todays.length}) · via ${via}</div>`;
+        html2 += `<div class="games-grid">`;
+        todays.forEach(g => html2 += renderGameCard(g, true));
+        html2 += `</div>`;
+      }
+      if (tomorrows.length) {
+        html2 += `<div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin:12px 0 6px;font-weight:600;">Próximos jogos</div>`;
+        html2 += `<div class="games-grid">`;
+        tomorrows.slice(0, 8).forEach(g => html2 += renderGameCard(g, false));
+        html2 += `</div>`;
+      }
+      todayContent.innerHTML = html2;
+
+      // Wire up clicks
+      todayContent.querySelectorAll('.game-card').forEach(card => {
+        card.addEventListener('click', () => {
+          const url = card.dataset.url;
+          urlInput.value = url;
+          loadFromUrl(url);
+          document.getElementById('player-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      });
+    } catch (e) {
+      console.error('[loadTodayGames]', e);
+      renderTodayError(e.message);
+    }
+  }
+
+  function renderTodayEmpty() {
+    todayContent.innerHTML = `
+      <div class="today-empty">
+        Nenhum jogo encontrado para hoje.<br>
+        <span style="font-size:11px;opacity:0.7;">Tente colar um link específico no campo abaixo.</span>
+      </div>
+    `;
+  }
+
+  function renderTodayError(detail) {
+    todayContent.innerHTML = `
+      <div class="today-empty">
+        <div style="margin-bottom:12px;">
+          <strong style="color:var(--warning);font-size:14px;">Proxies CORS indisponíveis</strong><br>
+          <span style="font-size:12px;opacity:0.8;">Os serviços públicos de proxy estão instáveis hoje. Use o modo manual abaixo — leva 30 segundos.</span>
+        </div>
+        <button class="btn-primary" id="btn-manual-home" style="margin-bottom:6px;width:100%;">
+          <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:currentColor;"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-2 14l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
+          Colar HTML da homepage (modo garantido)
+        </button>
+        <button class="today-action-btn" id="btn-retry-today" style="margin-top:4px;">
+          <svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.74 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4z"/></svg>
+          Tentar proxies novamente
+        </button>
+        <details style="margin-top:12px;font-size:11px;color:var(--text-muted);text-align:left;">
+          <summary style="cursor:pointer;">Detalhes técnicos do erro</summary>
+          <pre style="margin-top:6px;white-space:pre-wrap;word-break:break-all;font-size:10px;line-height:1.4;color:var(--error);">${escapeHtml(detail || '')}</pre>
+        </details>
+      </div>
+    `;
+    document.getElementById('btn-manual-home')?.addEventListener('click', openManualHomeModal);
+    document.getElementById('btn-retry-today')?.addEventListener('click', loadTodayGames);
+  }
+
+  // Manual home HTML modal
+  function openManualHomeModal() {
+    const modalHtml = `
+      <div class="modal-overlay show" id="manual-home-overlay" style="z-index:200;">
+        <div class="modal">
+          <div class="modal-header">
+            <h3>
+              <svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:var(--accent);"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
+              Carregar jogos manualmente
+            </h3>
+            <button class="modal-close" id="btn-close-manual-home">
+              <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div style="font-size:13px;color:var(--text-muted);margin-bottom:12px;line-height:1.6;">
+              Como os proxies CORS estão instáveis, você pode colar o HTML da homepage do futemax manualmente:
+              <ol style="margin:10px 0 10px 18px;">
+                <li>Abra <a href="https://futemax.ke/" target="_blank" style="color:var(--accent);">https://futemax.ke/</a> no navegador</li>
+                <li>Clique com o botão direito → <strong>"Ver código-fonte"</strong> (ou <span class="kbd">Ctrl+U</span> / <span class="kbd">Cmd+Opt+U</span> no Mac)</li>
+                <li>Selecione tudo (<span class="kbd">Ctrl+A</span> / <span class="kbd">Cmd+A</span>) e copie (<span class="kbd">Ctrl+C</span> / <span class="kbd">Cmd+C</span>)</li>
+                <li>Cole o HTML completo abaixo</li>
+              </ol>
+            </div>
+            <textarea id="manual-home-html" placeholder="Cole aqui o código-fonte HTML completo da homepage do futemax..." style="width:100%;min-height:120px;background:var(--bg-elev-2);border:1px solid var(--border);color:var(--text);padding:10px;border-radius:8px;font-size:12px;font-family:monospace;resize:vertical;"></textarea>
+            <div style="margin-top:10px;display:flex;gap:8px;">
+              <button class="btn-primary" id="btn-parse-manual-home">Extrair jogos</button>
+              <button class="btn-secondary" id="btn-cancel-manual-home">Cancelar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    // Remove any existing modal first
+    document.getElementById('manual-home-overlay')?.remove();
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+    const overlay = document.getElementById('manual-home-overlay');
+    const close = () => overlay.remove();
+    document.getElementById('btn-close-manual-home').addEventListener('click', close);
+    document.getElementById('btn-cancel-manual-home').addEventListener('click', close);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+    document.getElementById('btn-parse-manual-home').addEventListener('click', () => {
+      const html = document.getElementById('manual-home-html').value.trim();
+      if (!html) { alert('Cole o HTML da homepage primeiro.'); return; }
+      try {
+        const games = extractGamesFromHomepage(html);
+        const todays = games.filter(g => g.isToday);
+        const tomorrows = games.filter(g => !g.isPast && !g.isToday);
+
+        if (!todays.length && !tomorrows.length) {
+          alert('Nenhum jogo encontrado no HTML colado. Verifique se copiou o código-fonte completo da homepage.');
+          return;
+        }
+
+        let html2 = '';
+        if (todays.length) {
+          html2 += `<div style="font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;font-weight:600;">Hoje (${todays.length}) · via manual</div>`;
+          html2 += `<div class="games-grid">`;
+          todays.forEach(g => html2 += renderGameCard(g, true));
+          html2 += `</div>`;
+        }
+        if (tomorrows.length) {
+          html2 += `<div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin:12px 0 6px;font-weight:600;">Próximos jogos</div>`;
+          html2 += `<div class="games-grid">`;
+          tomorrows.slice(0, 8).forEach(g => html2 += renderGameCard(g, false));
+          html2 += `</div>`;
+        }
+        todayContent.innerHTML = html2;
+        todayContent.querySelectorAll('.game-card').forEach(card => {
+          card.addEventListener('click', () => {
+            const url = card.dataset.url;
+            urlInput.value = url;
+            loadFromUrl(url);
+            document.getElementById('player-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+          });
+        });
+        close();
+      } catch (e) {
+        alert('Erro ao processar HTML: ' + e.message);
+      }
+    });
+  }
+
+  function renderGameCard(g, isLive) {
+    const compClass = (g.competition || '').toLowerCase().replace(/\s+/g, '-');
+    const thumbStyle = g.thumb ? `background-image:url('${g.thumb}');` : '';
+    const thumbHtml = g.thumb
+      ? `<div class="game-thumb" style="${thumbStyle}"></div>`
+      : '';
+    return `
+      <div class="game-card ${isLive ? 'live' : ''}" data-url="${g.url}" title="${g.title}">
+        ${thumbHtml}
+        <div class="game-teams">${escapeHtml(g.team1)} <span style="color:var(--text-muted);font-weight:400;">×</span> ${escapeHtml(g.team2)}</div>
+        <div class="game-meta">
+          ${g.competition ? `<span class="game-comp ${compClass}">${escapeHtml(g.competition)}</span>` : '<span></span>'}
+          ${isLive ? '<span class="game-time">● AO VIVO</span>' : `<span class="game-time">${g.date}</span>`}
+        </div>
+      </div>
+    `;
+  }
+
+  function escapeHtml(s) {
+    if (!s) return '';
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  // Wire up today section buttons
+  document.getElementById('btn-refresh-today').addEventListener('click', loadTodayGames);
+  document.getElementById('btn-toggle-today').addEventListener('click', () => {
+    const c = document.getElementById('today-content');
+    c.style.display = (c.style.display === 'none') ? '' : 'none';
+  });
+
+  // Auto-load today's games on first page open
+  loadTodayGames();
+
+  // ============================================================
+  // Multi-source search: try to find same game on other sites
+  // ============================================================
+  const multiSourceBtn = document.getElementById('btn-search-sources');
+  const multiSourceResults = document.getElementById('multi-source-results');
+  const multiSourceList = document.getElementById('multi-source-list');
+
+  multiSourceBtn.addEventListener('click', async () => {
+    const url = urlInput.value.trim();
+    if (!url) { showStatus('Cole um link primeiro para buscar em outras fontes.', 'warn'); return; }
+
+    // Parse current URL to extract teams
+    const match = url.match(/\/([^/]+)-ao-vivo-(\d{2})-(\d{2})-(\d{4})\/?$/);
+    if (!match) {
+      showStatus('Não consegui identificar o jogo no link para buscar em outras fontes.', 'warn');
+      return;
+    }
+    const slug = match[1];
+
+    // Other sources to try (best-effort, may not work — many sites have different slug patterns)
+    const otherSources = [
+      { name: 'MultiCanais', url: `https://multicanais.tv/${slug}-ao-vivo/` },
+      { name: 'Futebol Play HD', url: `https://futebolplayhd.com/${slug}-ao-vivo/` },
+      { name: 'Fut TV', url: `https://fut.tv/${slug}-ao-vivo/` },
+      { name: 'FuteMAX (.app)', url: `https://futemax.app/${slug}-ao-vivo-${match[2]}-${match[3]}-${match[4]}/` },
+      { name: 'FuteMAX (.tv)', url: `https://futemax.tv/${slug}-ao-vivo-${match[2]}-${match[3]}-${match[4]}/` },
+    ];
+
+    multiSourceResults.classList.add('show');
+    multiSourceList.innerHTML = otherSources.map(s => `
+      <div class="source-result-item" data-url="${s.url}">
+        <div class="source-result-status loading">…</div>
+        <div class="source-result-name">${s.name}</div>
+        <div class="source-result-meta">verificando...</div>
+      </div>
+    `).join('');
+
+    // Check each in parallel
+    const items = multiSourceList.querySelectorAll('.source-result-item');
+    const checks = Array.from(items).map(async (item, idx) => {
+      const s = otherSources[idx];
+      const status = item.querySelector('.source-result-status');
+      const meta = item.querySelector('.source-result-meta');
+
+      try {
+        // Use CORS proxy
+        const proxyUrl = 'https://corsproxy.io/?url=' + encodeURIComponent(s.url);
+        const res = await fetch(proxyUrl, { signal: AbortSignal.timeout ? AbortSignal.timeout(6000) : undefined });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const text = await res.text();
+        // Check if it actually contains game content (not a 404 page)
+        if (text.length < 2000) throw new Error('página curta');
+        const adapter = SOURCE_ADAPTERS.find(a => a.hostMatch && a.hostMatch !== /.*/ && a.hostMatch.test(s.url)) || SOURCE_ADAPTERS[SOURCE_ADAPTERS.length - 1];
+        const doc = new DOMParser().parseFromString(text, 'text/html');
+        const players = adapter.extract(doc);
+        if (players.length === 0) throw new Error('sem players');
+
+        status.className = 'source-result-status found';
+        status.textContent = '✓';
+        status.style.background = 'var(--accent)';
+        status.style.color = '#06281c';
+        meta.textContent = players.length + ' players encontrados';
+        item.classList.add('found');
+        item.addEventListener('click', () => {
+          urlInput.value = s.url;
+          loadFromUrl(s.url);
+        });
+      } catch (e) {
+        status.className = 'source-result-status not-found';
+        status.textContent = '✗';
+        status.style.background = 'var(--bg-elev)';
+        status.style.color = 'var(--text-muted)';
+        meta.textContent = 'não disponível';
+        item.classList.add('not-found');
+      }
+    });
+    await Promise.all(checks);
+  });
+
+  // ============================================================
+  // Show source badge in match banner (monkey-patch renderPlayers)
+  // ============================================================
+  const _originalRenderPlayers = renderPlayers;
+  renderPlayers = function(parsed, sourceUrl) {
+    _originalRenderPlayers(parsed, sourceUrl);
+    // Update source badge
+    const adapter = getAdapterForUrl(sourceUrl);
+    if (adapter && adapter.label) {
+      matchSource.innerHTML = `<span class="source-badge">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+        ${adapter.label}
+      </span>`;
+    }
+  };
+})();
+</script>
+
+<!-- TV Modal -->
+<div class="modal-overlay" id="tv-modal-overlay">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="tv-modal-title-label">
+    <div class="modal-header">
+      <h3>
+        <svg viewBox="0 0 24 24"><path d="M21 17H3V5h18m0-2H3c-1.11 0-2 .89-2 2v12a2 2 0 0 0 2 2h7v2H8v2h8v-2h-2v-2h7a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"/></svg>
+        Enviar para TV — <span id="tv-modal-title-label">Opção</span>
+      </h3>
+      <button class="modal-close" id="tv-modal-close" aria-label="Fechar">
+        <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+
+      <!-- QR Code -->
+      <div class="qr-section">
+        <div class="qr-frame">
+          <img id="tv-qr-img" alt="QR Code do player" width="240" height="240">
+        </div>
+        <div id="tv-qr-fallback" style="display:none;background:var(--bg-elev-2);padding:20px;border-radius:8px;text-align:center;font-size:12px;color:var(--text-muted);">
+          Não foi possível gerar o QR Code.<br>Use a URL abaixo ou o botão "Abrir em nova aba".
+        </div>
+        <div class="qr-label">
+          <strong>Escaneie com a câmera do celular</strong><br>
+          para abrir o player no seu telefone
+        </div>
+      </div>
+
+      <!-- URL display -->
+      <div class="url-display">
+        <div class="url-display-text" id="tv-url-text">—</div>
+        <button class="copy-btn" id="tv-copy-btn">Copiar</button>
+      </div>
+
+      <!-- Action buttons -->
+      <div class="modal-action-row">
+        <button class="modal-action-btn primary" id="tv-open-tab">
+          <svg viewBox="0 0 24 24"><path d="M14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3m-2 16H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7h-2z"/></svg>
+          Abrir em nova aba
+        </button>
+      </div>
+
+      <!-- Native Cast button (only shows if Presentation API is available) -->
+      <button class="cast-btn" id="tv-cast-btn" style="display:none;">
+        <svg viewBox="0 0 24 24"><path d="M21 3H3c-1.1 0-2 .9-2 2v3h2V5h18v14h-7v2h7c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM1 18v3h3c0-1.66-1.34-3-3-3zm0-4v2c2.76 0 5 2.24 5 5h2c0-3.87-3.13-7-7-7zm0-4v2c4.97 0 9 4.03 9 9h2c0-6.08-4.93-11-11-11z"/></svg>
+        Transmitir via Chromecast
+      </button>
+
+      <!-- Device list (shown after cast starts) -->
+      <div class="device-list" id="tv-device-list">
+        <div class="device-list-title">Dispositivos conectados</div>
+        <div id="tv-devices"></div>
+      </div>
+
+      <!-- Instructions for different TV types -->
+      <div class="tv-instructions">
+        <div class="tv-tabs">
+          <button class="tv-tab active" data-target="chromecast">Chromecast</button>
+          <button class="tv-tab" data-target="airplay">Apple TV / AirPlay</button>
+          <button class="tv-tab" data-target="smarttv">Smart TV</button>
+          <button class="tv-tab" data-target="mirroring">Espelhar tela</button>
+        </div>
+        <div class="tv-tab-content" id="tv-tab-content-chromecast">
+          <strong>No PC (Chrome / Edge):</strong>
+          <ol>
+            <li>Clique em <span class="kbd">Abrir em nova aba</span> acima</li>
+            <li>Na nova aba, clique nos <strong>3 pontinhos (⋮)</strong> do Chrome no topo direito</li>
+            <li>Vá em <strong>"Transmitir, salvar e compartilhar"</strong> → <strong>"Transmitir..."</strong></li>
+            <li>Em "Fonte", escolha <strong>"Transmitir aba"</strong> (para incluir o áudio)</li>
+            <li>Selecione sua TV/Chromecast — o jogo aparece na TV</li>
+          </ol>
+          <strong>No celular Android (Chrome):</strong>
+          <ol>
+            <li>Escaneie o QR Code acima com a câmera do celular</li>
+            <li>No Chrome do celular, toque nos <strong>3 pontinhos (⋮)</strong></li>
+            <li>Toque em <strong>"Transmitir"</strong> e selecione sua TV</li>
+          </ol>
+        </div>
+        <div class="tv-tab-content" id="tv-tab-content-airplay" hidden>
+          <strong>No iPhone / iPad (Safari):</strong>
+          <ol>
+            <li>Escaneie o QR Code acima com a câmera do iPhone</li>
+            <li>No Safari, toque no ícone <strong>AirPlay</strong> (reto inferior)</li>
+            <li>Selecione sua Apple TV ou TV compatível com AirPlay</li>
+            <li>O player abre na TV em tela cheia</li>
+          </ol>
+          <strong>No Mac (Safari):</strong>
+          <ol>
+            <li>Clique em <span class="kbd">Abrir em nova aba</span> acima</li>
+            <li>No Safari, clique em <strong>Arquivo → AirPlay</strong> na barra de menu</li>
+            <li>Selecione sua Apple TV</li>
+          </ol>
+        </div>
+        <div class="tv-tab-content" id="tv-tab-content-smarttv" hidden>
+          <strong>Smart TV Samsung (Tizen) / LG (webOS) / Roku:</strong>
+          <ol>
+            <li>Abra o <strong>navegador da TV</strong> ("Internet" ou "Browser")</li>
+            <li>Aponte a câmera do celular para o QR Code acima</li>
+            <li>O link abre no celular — copie a URL completa</li>
+            <li>No navegador da TV, digite a URL na barra de endereço</li>
+            <li>Ou use a função "Enviar para TV" do navegador do celular, se disponível</li>
+          </ol>
+          <strong style="color:var(--warning);">Observação:</strong> nem todas as TVs têm navegador. TVs mais antigas podem não rodar players modernos.
+        </div>
+        <div class="tv-tab-content" id="tv-tab-content-mirroring" hidden>
+          <strong>Windows → qualquer Smart TV:</strong>
+          <ol>
+            <li>Pressione <span class="kbd">Win + K</span></li>
+            <li>Selecione sua TV (deve suportar Miracast)</li>
+            <li>A tela do PC é espelhada — abra o player aqui mesmo</li>
+          </ol>
+          <strong>Android → Smart TV:</strong>
+          <ol>
+            <li>Escaneie o QR Code acima</li>
+            <li>Ative o player no celular</li>
+            <li>Deslize a barra de notificações → toque em <strong>"Smart View"</strong> / <strong>"Espelhar tela"</strong></li>
+            <li>Selecione sua TV</li>
+          </ol>
+          <strong>iPhone → Apple TV:</strong>
+          <ol>
+            <li>Abra a <strong>Central de Controle</strong> (deslize de cima para baixo no canto superior direito)</li>
+            <li>Toque em <strong>"Espelhar tela"</strong></li>
+            <li>Selecione sua Apple TV</li>
+          </ol>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// TV Modal — Send to TV (QR / Cast / AirPlay / Smart TV)
+// ============================================================
+(function () {
+  const overlay = document.getElementById('tv-modal-overlay');
+  const closeBtn = document.getElementById('tv-modal-close');
+  const qrImg = document.getElementById('tv-qr-img');
+  const urlText = document.getElementById('tv-url-text');
+  const copyBtn = document.getElementById('tv-copy-btn');
+  const openTabBtn = document.getElementById('tv-open-tab');
+  const castBtn = document.getElementById('tv-cast-btn');
+  const deviceList = document.getElementById('tv-device-list');
+  const deviceListEl = document.getElementById('tv-devices');
+  const titleEl = document.getElementById('tv-modal-title-label');
+  const tabs = document.querySelectorAll('.tv-tab');
+  const tabContents = document.querySelectorAll('.tv-tab-content');
+
+  let currentUrl = '';
+
+  window.openTvModal = function(src, label) {
+    currentUrl = src;
+    titleEl.textContent = label;
+    urlText.textContent = src;
+
+    // Generate QR Code via public API (no external dependency in JS)
+    // api.qrserver.com is free, no auth, returns image directly
+    qrImg.src = 'https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=8&data=' + encodeURIComponent(src);
+    qrImg.onerror = () => {
+      qrImg.style.display = 'none';
+      const fb = document.getElementById('tv-qr-fallback');
+      if (fb) fb.style.display = 'block';
+    };
+    qrImg.style.display = 'block';
+    const fb = document.getElementById('tv-qr-fallback');
+    if (fb) fb.style.display = 'none';
+
+    // Show/hide native cast button
+    if (navigator.presentation || (window.chrome && window.chrome.cast)) {
+      castBtn.disabled = false;
+      castBtn.style.display = 'inline-flex';
+    } else {
+      castBtn.style.display = 'none';
+    }
+
+    // Reset device list
+    deviceList.classList.remove('show');
+    deviceListEl.innerHTML = '';
+
+    // Reset tabs to first
+    tabs.forEach(t => t.classList.remove('active'));
+    if (tabs[0]) tabs[0].classList.add('active');
+    tabContents.forEach(c => c.hidden = true);
+    const firstContent = document.getElementById('tv-tab-content-' + (tabs[0] && tabs[0].dataset.target));
+    if (firstContent) firstContent.hidden = false;
+
+    overlay.classList.add('show');
+  };
+
+  function closeModal() {
+    overlay.classList.remove('show');
+    if (window._activePresentation && window._activePresentation.connection) {
+      try { window._activePresentation.connection.terminate(); } catch(e){}
+      window._activePresentation = null;
+    }
+  }
+
+  closeBtn.addEventListener('click', closeModal);
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) closeModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && overlay.classList.contains('show')) closeModal();
+  });
+
+  // Copy URL
+  copyBtn.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(currentUrl);
+      copyBtn.textContent = '✓ Copiado!';
+      copyBtn.classList.add('copied');
+      setTimeout(() => {
+        copyBtn.textContent = 'Copiar';
+        copyBtn.classList.remove('copied');
+      }, 1800);
+    } catch (e) {
+      const ta = document.createElement('textarea');
+      ta.value = currentUrl;
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand('copy');
+        copyBtn.textContent = '✓ Copiado!';
+        copyBtn.classList.add('copied');
+        setTimeout(() => { copyBtn.textContent = 'Copiar'; copyBtn.classList.remove('copied'); }, 1800);
+      } catch(e2){}
+      document.body.removeChild(ta);
+    }
+  });
+
+  // Open in new tab (for native Cast menu access)
+  openTabBtn.addEventListener('click', () => {
+    window.open(currentUrl, '_blank', 'noopener,noreferrer');
+  });
+
+  // Native Cast (Presentation API) — works in Chrome desktop to Chromecast
+  castBtn.addEventListener('click', async () => {
+    if (navigator.presentation) {
+      try {
+        const pres = new PresentationRequest(currentUrl);
+        const conn = await pres.start();
+        window._activePresentation = { request: pres, connection: conn };
+        deviceList.classList.add('show');
+        deviceListEl.innerHTML = `
+          <div class="device-item">
+            <svg viewBox="0 0 24 24"><path d="M21 17H3V5h18m0-2H3c-1.11 0-2 .89-2 2v12a2 2 0 0 0 2 2h7v2H8v2h8v-2h-2v-2h7a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"/></svg>
+            <span class="device-name">${conn.state === 'connected' ? 'Transmitindo' : 'Conectando...'}</span>
+            <span class="device-status">●</span>
+          </div>
+        `;
+        conn.addEventListener('connect', () => {});
+        conn.addEventListener('close', () => {
+          deviceList.classList.remove('show');
+          window._activePresentation = null;
+        });
+        conn.addEventListener('terminate', () => {
+          deviceList.classList.remove('show');
+          window._activePresentation = null;
+        });
+        return;
+      } catch (e) {
+        console.warn('Presentation API falhou:', e);
+      }
+    }
+
+    // Fallback: open in new tab and instruct user to use Chrome's Cast menu
+    window.open(currentUrl, '_blank', 'noopener,noreferrer');
+    alert(
+      'Se o Chromecast não apareceu automaticamente:\n\n' +
+      '1. Abra a aba que acabou de abrir\n' +
+      '2. Clique nos 3 pontinhos (⋮) do Chrome no topo direito\n' +
+      '3. Vá em "Transmitir, salvar e compartilhar" → "Transmitir..."  (ou Cast)\n' +
+      '4. Selecione sua TV/Chromecast na lista'
+    );
+  });
+
+  // Tab switching
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      tabContents.forEach(c => c.hidden = true);
+      const target = document.getElementById('tv-tab-content-' + tab.dataset.target);
+      if (target) target.hidden = false;
+    });
+  });
+})();
+</script>
+
+</body>
+</html>
